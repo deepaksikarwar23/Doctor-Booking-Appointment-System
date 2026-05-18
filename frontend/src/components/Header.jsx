@@ -24,6 +24,7 @@ const Header = () => {
                 Book appointment <img className='w-3' src={assets.arrow_icon} alt="Arrow" />
             </a>
         </div>
+        
 
         {/*----------- Right Side ----------*/}
         <div className='md:w-1/2 relative'>
