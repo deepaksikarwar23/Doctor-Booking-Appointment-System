@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@theme {
+  /* This defines your custom medical blue primary color */
+  --color-primary: #5f6fff; 
+}
+
+.active hr{
+    @apply block 
+}
