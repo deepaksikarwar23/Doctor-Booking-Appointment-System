@@ -83,6 +83,7 @@ const addDoctor = asyncHandler(async (req, res, next) => {
     }
 });
 
+
 // api for login the admin
 const loginAdmin = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
