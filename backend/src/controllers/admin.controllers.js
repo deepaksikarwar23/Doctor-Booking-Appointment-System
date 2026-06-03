@@ -83,7 +83,6 @@ const addDoctor = asyncHandler(async (req, res, next) => {
     }
 });
 
-
 // api for login the admin
 const loginAdmin = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
@@ -103,4 +102,19 @@ const loginAdmin = asyncHandler(async (req, res) => {
     }
 })
 
-export { addDoctor, loginAdmin }
+//api to get all doctors data 
+const allDoctors= asyncHandler(async(req, res)=>{
+    const doctors= await Doctor.find({}).select('-password')
+
+    // here mongoose returns an array of doctors from our collection even if it has zero doctors it returns a blank array and a blank array inside an if statement is evaluates to true 
+    // if(!doctors){   
+    //     throw new ApiError(500, 'internal server error while fetching doctors data ')
+    // }
+
+    return res.status(200)
+              .json(new ApiResponse(200, {doctors}, "doctors data fetched successfully"))
+})
+
+
+
+export { addDoctor, loginAdmin, allDoctors}

@@ -12,14 +12,18 @@ const Doctors = () => {
    const navigate= useNavigate()
 
 
-    const applyFilter= ()=>{
-    if(speciality){
-      setFilterDoc(doctors.filter(doc => doc.speciality === speciality))
-    }
-    else {
-      setFilterDoc(doctors)
-    }
-   }
+   const applyFilter = () => {
+  if (speciality) {
+    // 🎯 FIX: Convert both strings to lowercase to ensure perfect matching regardless of casing!
+    setFilterDoc(
+      doctors.filter(
+        (doc) => doc.speciality.toLowerCase() === speciality.toLowerCase()
+      )
+    );
+  } else {
+    setFilterDoc(doctors);
+  }
+};
 
    useEffect(()=>{
       applyFilter()

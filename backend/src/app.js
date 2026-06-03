@@ -2,6 +2,7 @@ import express, { urlencoded } from 'express'
 import dotenv from 'dotenv'
 import cors from 'cors'
 import adminRouter from './routes/admin.routes.js';
+import doctorRouter from './routes/doctor.routes.js';
 
 
 dotenv.config('../.env');
@@ -24,7 +25,7 @@ app.use('/api/admin', adminRouter)
 
 
 
-
+app.use('/api/doctor', doctorRouter)
 
 
 
