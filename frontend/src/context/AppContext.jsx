@@ -6,25 +6,51 @@ export const AppContext = createContext();
 
 const AppContextProvider = (props) => {
     const currencySymbol = '$';
-    // 🎯 Clean state configuration: no asset import collisions
     const [doctors, setDoctors] = useState([]);
-
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const [token, setToken] = useState(localStorage.getItem('token') ? localStorage.getItem('token') : false)
 
-   const getDoctorsData = async () => {
-    try {
-        const { data } = await axios.get(backendUrl + '/api/doctor/list')
-        
-        if (data.success) {
-            // 🎯 FIX: Dig deep into data.data.doctors to extract the raw array!
-            setDoctors(data.data.doctors) 
-        } else {
-            toast.error(data.message)
+    const [userData, setUserData] = useState(false)
+
+
+    const getDoctorsData = async () => {
+        try {
+            const { data } = await axios.get(backendUrl + '/api/doctor/list')
+
+            if (data.success) {
+                setDoctors(data.data.doctors)
+            } else {
+                toast.error(data.message)
+            }
+        } catch (error) {
+            console.error(error.message)
         }
-    } catch (error) {
-        console.error(error.message)
     }
-}
+
+    const loadUserProfileData = async () => {
+        try {
+            const { data } = await axios.get(backendUrl + '/api/user/get-profile', { headers: { token } })
+            if(data.success){
+                setUserData(data.data)
+            }
+            else{
+                toast.error(data.message)
+            }
+        }
+        catch (error) {
+            console.log(error)
+            toast.error(error.message)
+        }
+    }
+
+    useEffect(()=>{
+        if(token){
+            loadUserProfileData()
+        }
+        else{
+            setUserData(false)
+        }
+    }, [token])
 
     useEffect(() => {
         if (backendUrl) {
@@ -32,10 +58,15 @@ const AppContextProvider = (props) => {
         }
     }, [backendUrl]);
 
+
     const value = {
         doctors,
         currencySymbol,
-        getDoctorsData
+        getDoctorsData,
+        token, setToken,
+        backendUrl,
+        userData, setUserData, 
+        loadUserProfileData
     };
 
     return (

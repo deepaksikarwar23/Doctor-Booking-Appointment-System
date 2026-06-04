@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import cors from 'cors'
 import adminRouter from './routes/admin.routes.js';
 import doctorRouter from './routes/doctor.routes.js';
+import userRouter from './routes/user.routes.js';
 
 
 dotenv.config('../.env');
@@ -19,13 +20,15 @@ app.use(cors())
 
 
 
-// routes declaration
-
+//admin routes declaration
 app.use('/api/admin', adminRouter)
 
 
-
+// doctor route declaration 
 app.use('/api/doctor', doctorRouter)
+
+// user route declaration
+app.use('/api/user' , userRouter)
 
 
 
@@ -42,5 +45,6 @@ app.use((err, req, res, next) => {
         message: message
     });
 });
+
 
 export {app}
