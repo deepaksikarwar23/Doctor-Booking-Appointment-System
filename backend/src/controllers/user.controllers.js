@@ -44,7 +44,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const loggedInUser = await User.findById(createdUser._id).select('-password')
 
     return res.status(201)
-        .json(new ApiResponse(201, { loggedInUser, token }, 'user registered successfully'))
+        .json(new ApiResponse(201, { user: loggedInUser, token }, 'user registered successfully'))
 })
 
 // api to login the user 
@@ -101,7 +101,7 @@ const getProfile= asyncHandler(async(req , res )=>{
     const userProfileData= await User.findById(userId).select('-password')
 
     return res.status(200)
-    .json(new ApiResponse(200, userProfileData , 'user profile data fetched successfully'))
+    .json(new ApiResponse(200, {user: userProfileData} , 'user profile data fetched successfully'))
 })
 
 // api to update the data 
@@ -156,7 +156,7 @@ const updateProfile = asyncHandler(async (req, res) => {
 
     // Status 200 is more semantically accurate for updates than 201 (Created)
     return res.status(200)
-        .json(new ApiResponse(200, updatedUserData, 'Profile data updated successfully'))
+        .json(new ApiResponse(200, {user: updatedUserData}, 'Profile data updated successfully'))
 })
 
 

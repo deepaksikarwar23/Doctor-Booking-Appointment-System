@@ -2,28 +2,34 @@ import jwt from 'jsonwebtoken'
 import asyncHandler from '../utils/asyncHandler.js'
 import { ApiError } from '../utils/ApiError.js'
 
-const authUser= asyncHandler(async (req, res, next)=>{
-    const {token}= req.headers
+const authUser = asyncHandler(async (req, res, next) => {
+    const { token } = req.headers
 
-    if(!token){
-        throw new ApiError(401, 'unauthorized request login again ')
+    if (!token) {
+        throw new ApiError(401, 'Unauthorized request. Please login again.')
     }
 
-  try {
-      const decoded_token= jwt.verify(token, process.env.JWT_SECRET)
-    
-      if(!decoded_token){
-        throw new ApiError(404, 'invalid authorization login again ')
-      }
+    try {
+        const decoded_token = jwt.verify(token, process.env.JWT_SECRET)
+        
+        // Safety check in case token parses but payload object is empty
+        if (!decoded_token || !decoded_token._id) {
+            throw new ApiError(401, 'Invalid authorization payload. Please login again.')
+        }
 
-      req.userId = decoded_token._id;
-      console.log("1. MIDDLEWARE COMPLETED - req.userId is set to:", req.userId);
-    
-      return next()
+        // Reads the exact '_id' claim you defined in userSchema.methods.generateAccessToken
+        req.userId = decoded_token._id;
+        console.log("1. MIDDLEWARE COMPLETED - req.userId is set to:", req.userId);
+        
+        return next()
 
-  } catch (error) {
-    throw new ApiError(401, error.message)
-  }
+    } catch (error) {
+        console.error("JWT Verification Engine Exception:", error.message);
+        
+        // 🎯 THE FIX: Use next() to pass the error object safely down the Express stack
+        // instead of raw 'throw' inside an async catch context block.
+        return next(new ApiError(401, error.message || 'Authorization failed. Token is invalid or expired.'))
+    }
 })
 
 export default authUser

@@ -3,6 +3,7 @@ import Doctor from '../models/doctor.model.js'
 import {ApiError} from '../utils/ApiError.js'
 import {ApiResponse} from '../utils/ApiResponse.js'
 
+// function to change the doctor availability 
 const changeAvailability = asyncHandler(async (req, res) => {
     const { docId } = req.body;
 
@@ -21,6 +22,7 @@ const changeAvailability = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, {}, 'Availability updated successfully'));
 });
 
+// function to get doctor list data from backend 
 const doctorList= asyncHandler(async(req , res )=>{
     const doctors = await Doctor.find({}).select(['-password' , '-email'])
 

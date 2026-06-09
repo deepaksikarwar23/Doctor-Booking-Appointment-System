@@ -182,4 +182,5 @@ const AddDoctor = () => {
   )
 }
 
+
 export default AddDoctor
