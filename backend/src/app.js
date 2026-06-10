@@ -33,13 +33,13 @@ app.use('/api/user' , userRouter)
 
 
 
-// At the absolute bottom of your app.js (after all your routes):
 app.use((err, req, res, next) => {
-    // Express will now intercept your 'ApiError' right here!
+    // 🎯 THE TELEMETRY INJECTION: Force Node to print the actual stack trace!
+    console.error("🔥 BACKEND CRASH DETECTED:", err);
+
     const statusCode = err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    // This converts your custom class data into a clean JSON object!
     res.status(statusCode).json({
         success: false,
         message: message

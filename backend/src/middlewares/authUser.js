@@ -19,15 +19,11 @@ const authUser = asyncHandler(async (req, res, next) => {
 
         // Reads the exact '_id' claim you defined in userSchema.methods.generateAccessToken
         req.userId = decoded_token._id;
-        console.log("1. MIDDLEWARE COMPLETED - req.userId is set to:", req.userId);
         
         return next()
 
     } catch (error) {
         console.error("JWT Verification Engine Exception:", error.message);
-        
-        // 🎯 THE FIX: Use next() to pass the error object safely down the Express stack
-        // instead of raw 'throw' inside an async catch context block.
         return next(new ApiError(401, error.message || 'Authorization failed. Token is invalid or expired.'))
     }
 })

@@ -61,15 +61,15 @@ const doctorSchema= new mongoose.Schema({
     timestamps:true,
     minimize:false})
 
-    doctorSchema.pre("save", async function(next){
-        if(!this.isModified('password'))  return next()
+doctorSchema.pre("save", async function () {
+    // 1. If the password wasn't modified, do nothing and return.
+    // Simply returning out of an async function tells Mongoose: "We are done, proceed to save!"
+    if (!this.isModified('password')) return;
 
-            try {
-                this.password= await bcrypt.hash(this.password, 10)
-            } catch (error) {
-                next(error)
-            }
-    })
+    // 2. Hash the password. If bcrypt fails, it will naturally throw an error, 
+    // which Mongoose will catch automatically and stop the operation!
+    this.password = await bcrypt.hash(this.password, 10);
+});
 
  const Doctor= mongoose.model('Doctor', doctorSchema)
 
