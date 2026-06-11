@@ -7,6 +7,7 @@ import bcrypt from 'bcrypt'
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import Appointment from '../models/appointment.model.js'
 import Doctor from "../models/doctor.model.js";
+import razorpay from 'razorpay'
 
 // api to register the user 
 const registerUser = asyncHandler(async (req, res) => {
@@ -299,5 +300,64 @@ const cancelAppointment = asyncHandler(async(req, res)=>{
     )
 })
 
+// api to make payment of appointment using razorpay
+const paymentRazorpay= asyncHandler(async(req, res)=>{
 
-export { registerUser, loginUser, getProfile , updateProfile , bookAppointment, listAppointment, cancelAppointment }
+    const razorpayInstance = new razorpay({
+    key_id:process.env.RAZORPAY_KEY_ID,
+    key_secret:process.env.RAZORPAY_KEY_SECRET
+})
+
+console.log("Checking API Key:", process.env.RAZORPAY_KEY_ID)
+
+    const {appointmentId} = req.body
+    const appointmentData = await Appointment.findById(appointmentId)
+
+    if(!appointmentData || appointmentData.cancelled){
+        throw new ApiError(400, 'Appointment cancelled or not found')
+    }
+
+    // creating options for razorPay payment 
+    const options={
+        amount:appointmentData.amount * 100,
+        currency: process.env.CURRENCY ,
+        receipt: appointmentId
+    }
+
+    // creation of an order 
+    const order = await new Promise((resolve, reject) => {
+        razorpayInstance.orders.create(options, (err, order) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(order);
+            }
+        });
+    });
+
+    return res.status(200)
+                .json(new ApiResponse(200, {order}, 'order fetched'))
+})
+
+// api to verify payment of razorpay 
+const verifyRazorpay = asyncHandler(async(req, res)=>{
+
+    const razorpayInstance = new razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET
+    })
+
+    const {razorpay_order_id} = req.body
+    const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id)
+   
+    if(orderInfo.status === 'paid'){
+        await Appointment.findByIdAndUpdate(orderInfo.receipt , {payment:true})
+        return res.status(200)
+                .json(new ApiResponse(200, {}, 'payment successful'))
+    }else{
+                return res.status(200)
+                .json(new ApiResponse(400, {}, 'payment failed'))
+    }
+})
+
+export { registerUser, loginUser, getProfile , updateProfile , bookAppointment, listAppointment, cancelAppointment, paymentRazorpay, verifyRazorpay }
