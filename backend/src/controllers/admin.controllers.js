@@ -2,10 +2,11 @@ import { ApiError } from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import validator from 'validator'
 import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
-import Doctor from "../models/doctor.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from 'jsonwebtoken'
+import Doctor from "../models/doctor.model.js";
 import Appointment from '../models/appointment.model.js'
+import User from '../models/user.model.js'
 
 //api for adding doctor
 const addDoctor = asyncHandler(async (req, res, next) => {
@@ -169,5 +170,34 @@ const appointmentCancel = asyncHandler(async(req, res)=>{
     )
 })
 
+// api to get the doctor, user , appointment data for the admin dashboard 
+const adminDashboard = asyncHandler(async(req, res)=>{
 
-export { addDoctor, loginAdmin, allDoctors, appointmentAdmin, appointmentCancel}
+    // MISTAKE --> we are first fetching the data from mongodb and then checks its length using js which is very inefficient it consumes a lot of ram instead we can use mongodb inbuilt countDocument method to get the length of the data in this way we don't need to first store the whole data in the variable and then apply filtering on it for length and all 
+
+    // 🎯 OPTIMIZATION: Use .countDocuments() instead of fetching entire arrays just to get the length!
+    // This stops your server from loading thousands of heavy rows into RAM.
+    const doctorsCount = await Doctor.countDocuments({});
+    const usersCount = await User.countDocuments({});
+    const appointmentsCount = await Appointment.countDocuments({});
+
+    // 🎯 OPTIMIZATION: Fetch only the latest 5 appointments directly from MongoDB sorted by creation time!
+    const latestAppointments = await Appointment.find({})
+        .sort({ createdAt: -1 }) // Sort by newest first
+        .limit(5)                // Grab exactly 5 records
+        .populate('userData', 'name image') // Populating target schemas safely if needed
+        .populate('docData', 'name image');
+        // the populate fields here used to grab a specific data like go into the userData and only bring back the name and image field not the whole userData object so we don't get all unnecessary data like id , email, password, address, createdAt etc. etc. 
+
+    const dashData= {
+        doctors: doctorsCount,
+        appointments:appointmentsCount,
+        patients:usersCount,
+         latestAppointments,
+    }
+
+    return res.status(200)
+            .json(new ApiResponse(200, {dashData}, 'Dashboard data fetched successfully'))
+})
+
+export { addDoctor, loginAdmin, allDoctors, appointmentAdmin, appointmentCancel, adminDashboard}
