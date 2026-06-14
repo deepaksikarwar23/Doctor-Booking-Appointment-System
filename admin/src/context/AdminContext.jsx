@@ -79,6 +79,7 @@ const AdminContextProvider= (props)=>{
         }
     }
 
+    // api endpoint to get the dashboard data for the admin panel 
     const getDashData= async ()=>{
         try {
             const {data} = await axios.get(backendUrl + '/api/admin/dashboard', {headers:{aToken}})

@@ -3,6 +3,7 @@ import { assets } from '../assets/assets.js'
 import { AdminContext } from '../context/AdminContext.jsx'
 import axios from 'axios'
 import { toast } from 'react-toastify'
+import { DoctorContext } from '../context/DoctorContext.jsx'
 
 
 const Login = () => {
@@ -12,6 +13,8 @@ const Login = () => {
     const [password, setPassword] = useState('')
 
     const { setAToken, backendUrl } = useContext(AdminContext)
+    const {setDToken} = useContext(DoctorContext)
+
 
     const onSubmitHandler = async (e) => {
         e.preventDefault()
@@ -21,6 +24,8 @@ const Login = () => {
                 const token = data.data.token
                 if (token) {
                     console.log(token)
+                    localStorage.removeItem('dToken')
+                    setDToken('')
                     localStorage.setItem('aToken', token)
                     setAToken(token)
                     toast.success(data.message);
@@ -30,7 +35,19 @@ const Login = () => {
                 }
             }
             else {
-                // doctor login logic 
+                // doctor login logic
+                const {data} = await axios.post(backendUrl + '/api/doctor/login', {email, password}) 
+                if(data.success){
+                    localStorage.removeItem('aToken')
+                    setAToken('')
+                    localStorage.setItem('dToken', data.data.token)
+                    setDToken(data.data.token)
+                    console.log(data.data.token)
+
+                }else{
+                    toast.error(data.message)
+
+                }
             }
         } catch (error) {
             console.error("Login API Request Failed:", error.response?.data || error.message);
@@ -51,7 +68,7 @@ const Login = () => {
                     <p>Password</p>
                     <input onChange={(e) => setPassword(e.target.value)} value={password} className='border border-[#DADADA] rounded w-full p-2 mt-1' type="password" required />
                 </div>
-                <button className='bg-primary text-white w-full py-2 rounded-md text-base'>Login</button>
+                <button className='bg-primary text-white w-full py-2 rounded-md text-base cursor-pointer'>Login</button>
 
                 {
                     state === 'Admin' ?
