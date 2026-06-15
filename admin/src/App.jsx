@@ -4,12 +4,16 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css' 
 import { AdminContext } from './context/AdminContext'
 import Navbar from './components/Navbar'
-import Sidebar from './components/Sidebar'
+import Sidebar from './components/Sidebar' // 🎯 Unified Sidebar Component
 import { Routes, Route } from 'react-router-dom'
+
+// Admin Pages
 import Dashboard from './pages/Admin/Dashboard'
 import AllAppointments from './pages/Admin/AllAppointments'
 import AddDoctor from './pages/Admin/AddDoctor'
 import DoctorList from './pages/Admin/DoctorList'
+
+// Doctor Pages
 import { DoctorContext } from './context/DoctorContext'
 import DoctorAppointments from './pages/Doctor/DoctorAppointments'
 import DoctorDashboard from './pages/Doctor/DoctorDashboard'
@@ -17,12 +21,11 @@ import DoctorProfile from './pages/Doctor/DoctorProfile'
 
 const App = () => {
   const { aToken } = useContext(AdminContext)
-  const {dToken} = useContext(DoctorContext)
+  const { dToken } = useContext(DoctorContext)
 
-  // 🔒 THE GLOBAL GUARD GATE
-  // If token is missing or wiped by our interceptor, drop EVERYTHING 
-  // and force the application window to render only the Login component view.
-  if (!aToken || !dToken) {
+  // 🔒 THE FIXED GLOBAL GUARD GATE
+  // Access is granted if AT LEAST ONE valid token signature exists.
+  if (!aToken && !dToken) {
     return (
       <>
         <ToastContainer />
@@ -31,26 +34,40 @@ const App = () => {
     )
   }
 
-  // 🟢 OTHERWISE: Render the secure admin layout tree
   return (
     <div className='bg-[#F8F9FD] min-h-screen'>
       <ToastContainer />
       <Navbar />
       <div className='flex items-start'>
+        
+        {/* 🎯 The unified sidebar handles its own internal role assertions internally! */}
         <Sidebar />
         
-        {/* Added a container wrapper to manage content layouts cleanly across pages */}
+        {/* Main Content Layout Pane Container */}
         <div className='flex-1 p-5 min-h-[calc(100vh-70px)] bg-[#F8F9FD]'>
           <Routes>
-            <Route path='/' element={<Dashboard />} /> {/* 🎯 Tip: Change base path to dashboard instead of empty fragment */}
-            <Route path='/admin-dashboard' element={<Dashboard />} />
-            <Route path='/all-appointments' element={<AllAppointments />} />
-            <Route path='/add-doctors' element={<AddDoctor />} />
-            <Route path='/doctors-list' element={<DoctorList />} />
+            
+            {/* 🛡️ CONDITIONALLY REGISTERED ADMINISTRATIVE ROUTES */}
+            {aToken && (
+              <>
+                <Route path='/' element={<Dashboard />} />
+                <Route path='/admin-dashboard' element={<Dashboard />} />
+                <Route path='/all-appointments' element={<AllAppointments />} />
+                <Route path='/add-doctors' element={<AddDoctor />} />
+                <Route path='/doctors-list' element={<DoctorList />} />
+              </>
+            )}
 
-            <Route path='/doctor-dashboard' element={<DoctorDashboard/>}/>
-            <Route path='/doctor-appointments' element={<DoctorAppointments/>}/>
-            <Route path='/doctor-profile' element={<DoctorProfile/>}/>
+            {/* 🩺 CONDITIONALLY REGISTERED CLINICAL ROUTES */}
+            {dToken && (
+              <>
+                <Route path='/' element={<DoctorDashboard />} />
+                <Route path='/doctor-dashboard' element={<DoctorDashboard />} />
+                <Route path='/doctor-appointments' element={<DoctorAppointments />} />
+                <Route path='/doctor-profile' element={<DoctorProfile />} />
+              </>
+            )}
+
           </Routes>
         </div>
 

@@ -4,6 +4,8 @@ import {ApiError} from '../utils/ApiError.js'
 import {ApiResponse} from '../utils/ApiResponse.js'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import Appointments from '../models/appointment.model.js'
+import Appointment from "../models/appointment.model.js"
 
 
 // function to change the doctor availability 
@@ -62,9 +64,57 @@ const doctorLogin = asyncHandler(async(req, res)=>{
             .json(new ApiResponse(200, {token}, 'doctor logged in successfully'))
 })
 
+// api to get doctor appointments for the doctor panel 
+const doctorAppointments = asyncHandler(async(req, res)=>{
+    const docId = req.docId
+
+    const appointmentsData = await Appointments.find({docId})
+    if (!appointmentsData || appointmentsData.length === 0) {
+        throw new ApiError(404, 'No appointment data found for this doctor')
+    }
+
+    return res.status(200)
+            .json( new ApiResponse(200, {appointmentsData}, 'appointments data fetched successfully'))
+})
+
+// API to mark appointment completed for doctor panel 
+const appointmentCompleted = asyncHandler(async (req, res) => {
+    const docId = req.docId 
+    const { appointmentId } = req.body
+
+    const appointmentData = await Appointment.findById(appointmentId)
+
+    if (!appointmentData || appointmentData.docId.toString() !== docId) {
+        throw new ApiError(403, 'Unauthorized action. This appointment does not belong to you.')
+    }
+
+    await Appointment.findByIdAndUpdate(appointmentId, { isCompleted: true })
+
+    return res.status(200).json(
+        new ApiResponse(200, null, 'Appointment marked as completed successfully')
+    )
+})
+
+// API to mark appointment cancelled for doctor panel 
+const appointmentCancelled = asyncHandler(async (req, res) => {
+    const docId = req.docId 
+    const { appointmentId } = req.body
+
+    const appointmentData = await Appointment.findById(appointmentId)
+
+    if (!appointmentData || appointmentData.docId.toString() !== docId) {
+        throw new ApiError(403, 'Unauthorized action. This appointment does not belong to you.')
+    }
+
+    await Appointment.findByIdAndUpdate(appointmentId, { cancelled: true })
+
+    return res.status(200).json(
+        new ApiResponse(200, null, 'Appointment cancelled successfully')
+    )
+})
 
 
-export { changeAvailability, doctorList, doctorLogin };
+export { changeAvailability, doctorList, doctorLogin, doctorAppointments, appointmentCompleted, appointmentCancelled };
 
 
 
