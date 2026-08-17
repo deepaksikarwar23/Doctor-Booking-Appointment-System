@@ -121,7 +121,7 @@ const MyAppointments = () => {
 
                 {/* 🟢 CASE 1: PAID BUTTON */}
                 {/* Only show this if the appointment is active AND successfully paid */}
-                {!item.cancelled && item.payment && (
+                {!item.cancelled && item.payment && !item.isCompleted &&  (
                   <button className='sm:min-w-48 py-2 border rounded text-green-600 bg-green-50 border-green-200 font-medium cursor-default'>
                     Paid ✅
                   </button>
@@ -129,7 +129,7 @@ const MyAppointments = () => {
 
                 {/* 🔵 CASE 2: PAY ONLINE BUTTON */}
                 {/* Only show this if it's active AND has NOT been paid yet */}
-                {!item.cancelled && !item.payment && (
+                {!item.cancelled && !item.payment && !item.isCompleted && (
                   <button onClick={() => appointmentRazorpay(item._id)} className='text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-primary hover:text-white transition-all duration-300 cursor-pointer'>
                     Pay Online
                   </button>
@@ -137,7 +137,7 @@ const MyAppointments = () => {
 
                 {/* 🟡 CASE 3: CANCEL APPOINTMENT BUTTON (This is where your bug was!) */}
                 {/* Only show this if it's active AND has NOT been paid yet! */}
-                {!item.cancelled && !item.payment && (
+                {!item.cancelled && !item.payment && !item.isCompleted && (
                   <button onClick={() => cancelAppointment(item._id)} className='text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300 cursor-pointer'>
                     Cancel Appointment
                   </button>
@@ -150,6 +150,9 @@ const MyAppointments = () => {
                     Appointment Cancelled
                   </button>
                 )}
+
+                {/* case 4 : if the payment is done and booking is completed  */}
+                {item.isCompleted && <button className='sm:min-w-48 py-2 border rounded text-green-600 bg-green-50 border-green-200 font-medium cursor-default'>Completed</button>}
               </div>
             </div>
           ))

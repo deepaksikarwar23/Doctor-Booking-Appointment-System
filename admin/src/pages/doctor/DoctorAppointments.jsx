@@ -10,6 +10,7 @@ const DoctorAppointments = () => {
   const {dToken, appointments , getAppointments, completeAppointment, cancelAppointment} = useContext(DoctorContext)
   const {slotDateFormat}= useContext(AppContext)
 
+  
   useEffect(()=>{
     if(dToken){
       getAppointments()

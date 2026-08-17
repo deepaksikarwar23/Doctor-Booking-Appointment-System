@@ -113,8 +113,87 @@ const appointmentCancelled = asyncHandler(async (req, res) => {
     )
 })
 
+// API TO FETCH DASHBOARD STATISTICS FOR THE DOCTOR PANEL
+const doctorDashboard = asyncHandler(async (req, res) => {
+    const docId = req.docId
 
-export { changeAvailability, doctorList, doctorLogin, doctorAppointments, appointmentCompleted, appointmentCancelled };
+    const appointments = await Appointment.find({ docId })
+
+    // 🎯 FIX 1: Prevent 400 error crash for brand-new doctors with no appointments
+    if (!appointments || appointments.length === 0) {
+        const emptyDashData = {
+            earnings: 0,
+            appointments: 0,
+            patients: 0,
+            latestAppointments: []
+        }
+        return res.status(200).json(
+            new ApiResponse(200, { dashData: emptyDashData }, 'Dashboard initialized successfully')
+        )
+    }
+
+    let earnings = 0
+    appointments.forEach((item) => {
+        if (item.isCompleted || item.payment) {
+            earnings += item.amount || 0
+        }
+    })
+
+    // 3. Extract unique patient IDs using a fast ES6 Set
+    const uniquePatients = new Set()
+    appointments.forEach((item) => {
+        if (item.userId) {
+            // 🎯 FIX 3: Cast ObjectId references to raw strings for exact comparison matches
+            uniquePatients.add(item.userId.toString())
+        }
+    })
+
+    // 4. Extract latest 5 appointments safely without mutating the original database array
+    // 🎯 FIX 4: Creating a shallow copy before reversing prevents unexpected array order bugs later
+    const latestAppointments = [...appointments].reverse().slice(0, 5)
+
+    const dashData = {
+        earnings,
+        appointments: appointments.length,
+        patients: uniquePatients.size,
+        latestAppointments
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, { dashData }, 'Dashboard analytics aggregated successfully')
+    )
+})
+
+// api to get the doctor profile for the doctor panel 
+const doctorProfile = asyncHandler(async(req, res)=>{
+    const docId= req.docId
+
+    const profileData = await Doctor.findById(docId)
+
+    if(!profileData){
+        throw new ApiError(404 , 'Doctor not found  ')
+    }
+
+    return res.status(200)
+            .json(new ApiResponse(200, {profileData}, 'doctor profile data fetched successfully'))
+})
+
+// API to update doctor profile data from doctor panel 
+const updateDoctorProfile = asyncHandler(async(req, res)=>{
+    const docId = req.docId
+    const {fees, address, available} = req.body
+
+    const updatedProfileData = await Doctor.findByIdAndUpdate(docId, {fees, address, available}, {new:true})
+
+    if(!updatedProfileData){
+        throw new ApiError(400, 'Doctor not found  ')
+    }
+
+    return res.status(200)
+            .json(new ApiResponse(200, {updatedProfileData}, 'Doctor Profile data updated successfully'))
+})
+
+export { changeAvailability, doctorList, doctorLogin, doctorAppointments, appointmentCompleted, appointmentCancelled, doctorDashboard, doctorProfile, updateDoctorProfile };
 
 
 
