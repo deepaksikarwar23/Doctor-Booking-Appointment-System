@@ -183,7 +183,7 @@ const adminDashboard = asyncHandler(async(req, res)=>{
 
     // 🎯 OPTIMIZATION: Fetch only the latest 5 appointments directly from MongoDB sorted by creation time!
     const latestAppointments = await Appointment.find({})
-        .sort({ createdAt: -1 }) // Sort by newest first
+        .sort({ date: -1 }) // Sort by newest first
         .limit(5)                // Grab exactly 5 records
         .populate('userData', 'name image') // Populating target schemas safely if needed
         .populate('docData', 'name image');

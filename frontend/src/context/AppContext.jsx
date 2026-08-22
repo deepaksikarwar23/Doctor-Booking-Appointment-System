@@ -38,16 +38,30 @@ const AppContextProvider = (props) => {
                 toast.error(data.message)
                 // 🎯 CLEANUP 1: If backend says success is false, the token is useless
                 setToken('')
+                setUserData(false)
                 localStorage.removeItem('token')
             }
         }
         catch (error) {
             console.log(error)
-            toast.error(error.message)
-            // 🎯 CLEANUP 2: If network or token validation fails entirely, flush everything
-            setToken('')
-            localStorage.removeItem('token')
-            setUserData(false)
+            // 🚨 Check if server responded with 401 (Expired or Invalid Token)
+            if (error.response && error.response.status === 401) {
+                // 1. Display custom friendly toast
+                toast.error("Session expired. Redirecting to login...")
+
+                // 2. Wipe token and user state immediately
+                setToken('')
+                setUserData(false)
+                localStorage.removeItem('token')
+
+                // 3. Redirect to login page (with optional short delay so user reads the toast)
+                setTimeout(() => {
+                    navigate('/login')
+                }, 1000)
+            } else {
+                // Fallback for network issues or other errors
+                toast.error(error.response?.data?.message || error.message)
+            }
         }
     }
 
@@ -68,7 +82,7 @@ const AppContextProvider = (props) => {
 
 
     const value = {
-        doctors,getDoctorsData,
+        doctors, getDoctorsData,
         currencySymbol,
         token, setToken,
         backendUrl,

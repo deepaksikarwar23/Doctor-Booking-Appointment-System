@@ -75,7 +75,7 @@ const DoctorAppointments = () => {
                             {/* 6. Medical Billing Fees */}
                             <p className='font-semibold text-gray-800'>
                                 <span className='sm:hidden text-gray-400 mr-1'>Fees:</span>
-                                ₹{item.amount || '500'}
+                                ${item.amount || '500'}
                             </p>
 
                             {/* 7. Context Management Actions Toggle */}

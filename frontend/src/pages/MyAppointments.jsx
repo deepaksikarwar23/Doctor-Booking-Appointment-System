@@ -121,7 +121,7 @@ const MyAppointments = () => {
 
                 {/* 🟢 CASE 1: PAID BUTTON */}
                 {/* Only show this if the appointment is active AND successfully paid */}
-                {!item.cancelled && item.payment && !item.isCompleted &&  (
+                {!item.cancelled && item.payment && !item.isCompleted && (
                   <button className='sm:min-w-48 py-2 border rounded text-green-600 bg-green-50 border-green-200 font-medium cursor-default'>
                     Paid ✅
                   </button>
